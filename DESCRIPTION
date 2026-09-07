@@ -2,7 +2,7 @@ Package: gfcdash
 Type: Package
 Title: Interactive Dashboard for Global Forest Change Analysis
 Version: 0.1.0
-Authors@R: person("Ugyen", "Penjor", email = "ugyen.penjor@fauna-flora.org",
+Authors@R: person("Ugyen", "Penjor", email = "your.email@example.org",
     role = c("aut", "cre"))
 Description: Provides an interactive Shiny dashboard for uploading or drawing
     an Area of Interest (AOI), downloading and thresholding the relevant
@@ -44,5 +44,5 @@ Suggests:
     ggfx,
     randomcoloR
 Config/testthat/edition: 3
-URL: https://github.com/ugyenpenjor1/gfcdash
-BugReports: https://github.com/ugyenpenjor1/gfcdash/issues
+URL: https://github.com/yourusername/gfcdash
+BugReports: https://github.com/yourusername/gfcdash/issues

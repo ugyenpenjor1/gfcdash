@@ -16,7 +16,7 @@ automatically the first time you install `gfcdash`.
 
 ```r
 if (!requireNamespace("remotes", quietly = TRUE)) install.packages("remotes")
-remotes::install_github("ugyenpenjor1/gfcdash")
+remotes::install_github("yourusername/gfcdash")
 ```
 
 ### From CRAN (once published)

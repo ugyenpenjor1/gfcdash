@@ -6,10 +6,9 @@
 
 ################################################################################
 # SECTION 1: CORE GFC HELPER FUNCTIONS
-# (adapted from gfanalysis package that is now retired)
-# new functions that were not in gfcanalysis package are: get_gfc_tile_grid,
-# check_aoi, make_tile_mosaic, utm_epsg, forest_cover_year, plot_forest_change,
-# compute_forest_mask, compute_yearly_stats
+# (adapted from GFC_full_script_030926.R; the interactive / hard-coded-path
+#  demo block at the top of that script is intentionally not carried over -
+#  AOI upload is handled through the Shiny "Upload AOI" tab instead)
 ################################################################################
 
 

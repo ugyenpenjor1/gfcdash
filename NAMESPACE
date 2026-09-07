@@ -3,6 +3,16 @@
 # roxygen2 installed - this hand-built version is a correct starting point
 # but devtools::document() should be treated as the source of truth going
 # forward, especially if you add/remove any @export or @import tags.
+#
+# NOTE: every package the original script loaded via library() is imported
+# in full here (import(), not importFrom() with a hand-picked function
+# list). An earlier version tried to enumerate only the specific functions
+# used from mapgl/leaflet/etc., and repeatedly missed some - each miss
+# surfaces as "could not find function" only once a user clicks into the
+# specific tab that uses it, which is a bad way to discover a typo. Full
+# import() exactly matches how these packages behaved when loaded with
+# library() in the original script, at the cost of the cosmetic (harmless,
+# see utils_pkg.R) "replacing previous import" messages at library() time.
 
 export(run_gfc_dashboard)
 export(check_aoi)
@@ -15,6 +25,7 @@ export(update_required_packages)
 
 import(shiny)
 import(shinydashboard)
+import(shinyjs)
 import(shinyWidgets)
 import(dplyr)
 import(tidyr)
@@ -23,37 +34,10 @@ import(patchwork)
 import(sf)
 import(terra)
 import(tidyterra)
-
-importFrom(shinyjs,useShinyjs)
-importFrom(shinyjs,reset)
-importFrom(mapgl,maplibreOutput)
-importFrom(mapgl,renderMaplibre)
-importFrom(mapgl,maplibre)
-importFrom(mapgl,maplibre_proxy)
-importFrom(mapgl,add_raster_source)
-importFrom(mapgl,add_raster_layer)
-importFrom(mapgl,add_globe_minimap)
-importFrom(mapgl,add_draw_control)
-importFrom(mapgl,add_fill_layer)
-importFrom(mapgl,add_line_layer)
-importFrom(mapgl,fit_bounds)
-importFrom(mapgl,fly_to)
-importFrom(mapgl,clear_layer)
-importFrom(mapgl,clear_drawn_features)
-importFrom(mapgl,get_drawn_features)
-importFrom(mapgl,set_layout_property)
-importFrom(leaflet,leafletOutput)
-importFrom(leaflet,renderLeaflet)
-importFrom(leaflet,leaflet)
-importFrom(leaflet,addProviderTiles)
-importFrom(leaflet,addPolygons)
-importFrom(leaflet,addLayersControl)
-importFrom(leaflet,providers)
-importFrom(leafem,addImageQuery)
-importFrom(DT,DTOutput)
-importFrom(DT,renderDT)
-importFrom(DT,datatable)
-importFrom(scales,comma)
-importFrom(scales,percent)
-importFrom(animation,saveGIF)
-importFrom(jsonlite,base64_enc)
+import(leaflet)
+import(leafem)
+import(mapgl)
+import(DT)
+import(scales)
+import(animation)
+import(jsonlite)

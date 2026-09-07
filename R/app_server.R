@@ -7,7 +7,7 @@
 #' @keywords internal
 #'
 #' @import shiny
-#' @importFrom shinyjs reset
+#' @import shinyjs
 #' @import dplyr
 #' @import tidyr
 #' @import ggplot2
@@ -15,17 +15,13 @@
 #' @import sf
 #' @import terra
 #' @import tidyterra
-#' @importFrom mapgl renderMaplibre maplibre maplibre_proxy add_raster_source
-#'   add_raster_layer add_globe_minimap add_draw_control add_fill_layer
-#'   add_line_layer fit_bounds fly_to clear_layer clear_drawn_features
-#'   get_drawn_features set_layout_property
-#' @importFrom leaflet renderLeaflet leaflet addProviderTiles addPolygons
-#'   addLayersControl providers
-#' @importFrom leafem addImageQuery
-#' @importFrom DT renderDT datatable
-#' @importFrom scales comma percent
-#' @importFrom animation saveGIF
-#' @importFrom jsonlite base64_enc
+#' @import mapgl
+#' @import leaflet
+#' @import leafem
+#' @import DT
+#' @import scales
+#' @import animation
+#' @import jsonlite
 ################################################################################
 # SECTION 4: SERVER
 ################################################################################
@@ -115,6 +111,7 @@ gfc_app_server <- function(input, output, session) {
   ##############################################################################
   # TAB 1: UPLOAD AOI
   ##############################################################################
+  ####
   observeEvent(input$load_aoi, {
     req(input$shapefile)
     

@@ -9,10 +9,10 @@
 #' @import shiny
 #' @import shinydashboard
 #' @import shinyWidgets
-#' @importFrom shinyjs useShinyjs
-#' @importFrom mapgl maplibreOutput
-#' @importFrom leaflet leafletOutput
-#' @importFrom DT DTOutput
+#' @import shinyjs
+#' @import mapgl
+#' @import leaflet
+#' @import DT
 gfc_app_ui <- function() {
 
 # ---- dark theme CSS (look adapted from the Spatial Data Explorer dashboard) ----

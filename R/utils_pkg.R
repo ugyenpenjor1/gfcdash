@@ -1,5 +1,16 @@
 # Small internal utilities shared across the package.
 #
+# IMPORTANT PACKAGING NOTE:
+# In the original single-file script, `.has_hrbrthemes <- requireNamespace(...)`
+# and friends were top-level statements, safe to evaluate fresh every time a
+# *script* is sourced. In a *package* they need care: a bare top-level
+# assignment is only ever evaluated once, at build time. An earlier version
+# of this file tried to fix that with makeActiveBinding() in .onLoad(), but
+# active bindings do not survive R's package lazy-load serialization - they
+# silently freeze into NULL instead of staying dynamic. The robust fix is a
+# plain function, called fresh every time it's needed - ordinary functions
+# always survive package (de)serialization correctly.
+
 #' Check whether an optional (Suggests-only) package is installed
 #'
 #' Used to gate optional plot styling / hover-query features that degrade
