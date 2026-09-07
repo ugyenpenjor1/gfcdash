@@ -1,0 +1,45 @@
+Package: gfcdash
+Type: Package
+Title: Interactive Dashboard for Global Forest Change Analysis
+Version: 0.1.0
+Authors@R: person("Ugyen", "Penjor", email = "ugyen.penjor@fauna-flora.org",
+    role = c("aut", "cre"))
+Description: Provides an interactive Shiny dashboard for uploading or drawing
+    an Area of Interest (AOI), downloading and thresholding the relevant
+    Hansen et al. Global Forest Change (GFC) tiles, computing year-by-year
+    forest cover and loss statistics, and building classified change maps,
+    multi-panel comparison maps, and time-series animations. Designed so
+    users with no R experience can launch the full analysis with a single
+    function call.
+License: MIT + file LICENSE
+Encoding: UTF-8
+RoxygenNote: 7.3.2
+Depends:
+    R (>= 4.1.0)
+Imports:
+    shiny,
+    shinydashboard,
+    shinyjs,
+    shinyWidgets,
+    sf,
+    terra,
+    leaflet,
+    leafem,
+    mapgl,
+    RCurl,
+    stringr,
+    DT,
+    ggplot2,
+    patchwork,
+    dplyr,
+    tidyr,
+    tidyterra,
+    scales,
+    animation,
+    jsonlite
+Suggests:
+    testthat (>= 3.0.0),
+    devtools
+Config/testthat/edition: 3
+URL: https://github.com/ugyenpenjor1/gfcdash
+BugReports: https://github.com/ugyenpenjor1/gfcdash/issues
