@@ -46,7 +46,7 @@ get_gfc_tile_grid <- function() {
   .gfc_env$gfc_tiles
 }
 
-# check_aoi
+# ---- check_aoi ---------------------------------------------------------------
 #' Validate and repair an AOI geometry
 #'
 #' Coerces `sp`/`terra` inputs to `sf`, drops Z/M dimensions, and repairs
@@ -83,7 +83,7 @@ check_aoi <- function(aoi) {
   aoi
 }
 
-# calc_gfc_tiles
+# ---- calc_gfc_tiles -----------------------------------------------------------
 #' Determine which Hansen GFC tiles intersect an AOI
 #'
 #' @param aoi An `sf`, `SpatialPolygonsDataFrame`, or `SpatVector` object.
@@ -108,7 +108,7 @@ calc_gfc_tiles <- function(aoi) {
   gfc_tiles[intersecting, ]
 }
 
-# download helpers
+# ---- download helpers ----------------------------------------------------------
 verify_download <- function(tile_url, local_path) {
   ok <- tryCatch({
     header <- RCurl::getURL(tile_url, nobody = 1L, header = 1L)
@@ -189,7 +189,7 @@ download_tiles <- function(tiles, output_folder,
   list(successes = successes, skips = skips, failures = failures)
 }
 
-# make_tile_mosaic (terra version)
+# ---- make_tile_mosaic (terra version) -------------------------------------------
 make_tile_mosaic <- function(aoi, data_folder, dataset, stack = "change") {
   if (stack == "change") {
     image_names <- c("treecover2000", "lossyear", "gain", "datamask")
@@ -239,7 +239,7 @@ make_tile_mosaic <- function(aoi, data_folder, dataset, stack = "change") {
   tile_mosaic
 }
 
-# utm_epsg (returns an EPSG code, not a proj4string)
+# ---- utm_epsg (returns an EPSG code, not a proj4string) -------------------------
 #' Look up the UTM zone EPSG code for a longitude/latitude point
 #'
 #' @param x Longitude, in decimal degrees.
@@ -263,7 +263,7 @@ utm_epsg <- function(x, y) {
 }
 
 
-# extract_gfc
+# ---- extract_gfc -----------------------------------------------------------------
 #' Extract GFC data for an AOI, downloading tiles to a temp folder
 #' @param aoi sf, sp SpatialPolygonsDataFrame, or terra SpatVector
 #' @param to_UTM reproject output to the UTM zone of the AOI centroid
@@ -321,7 +321,7 @@ extract_gfc <- function(aoi,
   tile_mosaic
 }
 
-# threshold_gfc
+# ---- threshold_gfc ----------------------------------------------------------
 #' Threshold the GFC product into forest/loss/gain classes
 #' @param gfc a SpatRaster with 4 layers: treecover2000, lossyear, gain, datamask
 #' @param forest_threshold percent canopy cover to use as forest/non-forest cutoff
@@ -365,7 +365,7 @@ threshold_gfc <- function(gfc, forest_threshold = 30, filename = NULL, overwrite
   thresholded
 }
 
-# gfc_stats
+# ---- gfc_stats ----------------------------------------------------------------
 #' Calculate annual forest loss/gain statistics for an AOI
 #' Calculate annual forest loss/gain statistics for an AOI
 #'
@@ -448,7 +448,7 @@ gfc_stats <- function(aoi, gfc, scale_factor = 1, dataset = "GFC-2025-v1.13") {
   list(loss_table = loss_table, gain_table = gain_table)
 }
 
-# forest_cover_year
+# ---- forest_cover_year -------------------------------------------------------
 #' Reconstruct forest cover for any year from GFC loss/gain layers
 forest_cover_year <- function(gfc, target_year, aoi = NULL) {
   names(gfc) <- c("treecover2000", "lossyear", "gain", "datamask")
@@ -471,7 +471,7 @@ forest_cover_year <- function(gfc, target_year, aoi = NULL) {
   forest_current
 }
 
-# plot_forest_change (ggplot/patchwork version)
+# ---- plot_forest_change (ggplot/patchwork version) ---------------------------
 plot_forest_change <- function(gfc, aoi, target_year, combined = TRUE) {
   aoi_sf <- check_aoi(aoi)
   aoi_sf <- sf::st_transform(aoi_sf, terra::crs(gfc))
@@ -499,7 +499,7 @@ plot_forest_change <- function(gfc, aoi, target_year, combined = TRUE) {
   if (combined) p1 + p2 else list(p2000 = p1, target = p2)
 }
 
-# annual_stack
+# ---- annual_stack -------------------------------------------------------------
 #' Codes: 0 nodata, 1 forest, 2 non-forest, 3 loss, 4 gain, 5 loss+gain, 6 water
 annual_stack <- function(gfc, dataset = "GFC-2025-v1.13", progress_fun = NULL) {
 
@@ -538,10 +538,10 @@ annual_stack <- function(gfc, dataset = "GFC-2025-v1.13", progress_fun = NULL) {
   out
 }
 
-# theme_dark_custom
+# ---- theme_dark_custom --------------------------------------------------------
 # Dark, glow-friendly theme used for on-screen dashboard display.
 theme_dark_custom <- function() {
-  base_family <- if (.has_hrbrthemes) "sans" else ""
+  base_family <- if (pkg_available("hrbrthemes")) "sans" else ""
   theme_minimal(base_size = 13) +
     theme(
       text = element_text(family = base_family),
@@ -556,7 +556,7 @@ theme_dark_custom <- function() {
 # with_glow(): wraps a geom in ggfx::with_outer_glow when ggfx is available,
 # otherwise returns the geom unchanged so the app still works without it.
 with_glow <- function(geom, colour = "white", sigma = 15, expand = 15) {
-  if (.has_ggfx) {
+  if (pkg_available("ggfx")) {
     ggfx::with_outer_glow(geom, colour = colour, sigma = sigma, expand = expand)
   } else {
     geom
@@ -564,15 +564,15 @@ with_glow <- function(geom, colour = "white", sigma = 15, expand = 15) {
 }
 
 
-# shared classified-map palette (used by both plot_gfc() and the Leaflet
-#      interactive classified map, so the two views always agree)
+# ---- shared classified-map palette (used by both plot_gfc() and the Leaflet
+#      interactive classified map, so the two views always agree) ---------------
 GFC_CLASS_CODES  <- c(1, 2, 3, 4, 5, 6, 0)
 GFC_CLASS_COLORS <- c("1" = "#009966", "2" = "#cc9933", "3" = "#cc3333",
                        "4" = "#993366", "5" = "#ff99cc", "6" = "#336699", "0" = "#999999")
 GFC_CLASS_LABELS <- c("1" = "Forest", "2" = "Non-forest", "3" = "Forest loss",
                        "4" = "Forest gain", "5" = "Loss and gain", "6" = "Water", "0" = "No data")
 
-# plot_gfc: classified single-year change map
+# ---- plot_gfc: classified single-year change map -------------------------------
 plot_gfc <- function(
     fchg,
     aoi = NULL,
@@ -651,7 +651,7 @@ plot_gfc <- function(
   p
 }
 
-# animate_annual
+# ---- animate_annual -------------------------------------------------------------
 animate_annual <- function(
     aoi,
     gfc_stack,
@@ -731,7 +731,7 @@ animate_annual <- function(
   invisible(file.path(out_dir, if (type == "gif") paste0(out_basename, ".gif") else paste0(out_basename, ".html")))
 }
 
-# compute_forest_mask
+# ---- compute_forest_mask -------------------------------------------------------
 compute_forest_mask <- function(tree_r, loss_r, gain_r, year, threshold = 30) {
   loss_code <- year - 2000
   was_forest_2000 <- terra::ifel(tree_r >= threshold, 1L, 0L)
@@ -748,7 +748,7 @@ area_ha <- function(mask, px_area) {
   sum(terra::values(mask * px_area), na.rm = TRUE)
 }
 
-# compute_yearly_stats
+# ---- compute_yearly_stats -------------------------------------------------------
 compute_yearly_stats <- function(tree_r, loss_r, gain_r,
                                   base_year, target_year,
                                   pixel_area_ha,

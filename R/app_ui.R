@@ -158,6 +158,7 @@ Shiny.addCustomMessageHandler('gfcProgress', function(msg) {
       tags$link(rel = "stylesheet",
                 href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"),
       tags$style(HTML(gfc_dark_css)),
+      ####
       tags$style(HTML("
       .mapbox-gl-draw_ctrl-draw-btn.active {
         background-color: #fbb03b !important;
@@ -181,6 +182,7 @@ Shiny.addCustomMessageHandler('gfcProgress', function(msg) {
             helpText("Please upload all shapefile components together (.shp, .shx, .dbf, .prj). ",
                      "Nothing you upload here is ever saved to disk permanently - it is kept only ",
                      "in a temporary session folder for this analysis and removed automatically."),
+            ####
             fluidRow(
               column(6, actionButton("load_aoi", "Load AOI", icon = icon("check"), class = "btn-primary btn-block")),
               column(6, actionButton("clear_aoi", "Clear all data", icon = icon("trash"), class = "btn-danger btn-block"))
@@ -192,6 +194,7 @@ Shiny.addCustomMessageHandler('gfcProgress', function(msg) {
               column(6, actionButton("use_drawn_aoi", "Use drawn polygon", icon = icon("draw-polygon"), class = "btn-success btn-block")),
               column(6, actionButton("clear_drawn_aoi", "Clear drawn AOI", icon = icon("eraser"), class = "btn-warning btn-block"))
             ),
+            ####
             hr(),
             maplibreOutput("aoi_map", height = 440),
             radioButtons(
@@ -403,7 +406,7 @@ Shiny.addCustomMessageHandler('gfcProgress', function(msg) {
                     tabPanel(
                       "Interactive map (Leaflet)",
                       br(),
-                      helpText(if (.has_leafem) "Hover over the map to see the loss year under the cursor."
+                      helpText(if (pkg_available("leafem")) "Hover over the map to see the loss year under the cursor."
                                else "Install the 'leafem' package to enable hover-to-see-year on this map."),
                       chooseSliderSkin("Flat", color = "#006666"),
                       sliderInput("loss_year_opacity", "Layer transparency:", min = 0, max = 1, value = 0.85, step = 0.05, width = "260px"),

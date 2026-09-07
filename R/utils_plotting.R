@@ -12,7 +12,7 @@
 # plain version used when the user downloads a plot for reports.
 ################################################################################
 
-# Cover vs loss dual-axis trend line (from gfc_stats()$loss_table)
+# ---- Cover vs loss dual-axis trend line (from gfc_stats()$loss_table) ----------
 make_cover_loss_plot <- function(dat, base_year, target_year, dark = FALSE) {
   dat <- dat
   dat[is.na(dat)] <- 0
@@ -44,6 +44,7 @@ make_cover_loss_plot <- function(dat, base_year, target_year, dark = FALSE) {
       name = "cover (ha)",
       sec.axis = sec_axis(transform = ~((. - a.min) * b.diff / a.diff) + b.min, name = "loss (ha)")
     ) +
+    #scale_x_continuous(breaks = seq(base_year, target_year, by = max(1, round((target_year - base_year) / 15)))) +
     scale_x_continuous(breaks = seq(base_year, target_year, by = max(1, round((target_year - base_year) / 24)))) +
     labs(x = NULL) +
     theme(axis.text.x = element_text(angle = 45, hjust = 1))
@@ -72,7 +73,7 @@ make_cover_loss_plot <- function(dat, base_year, target_year, dark = FALSE) {
   p
 }
 
-# 4-panel yearly trend analysis (from compute_yearly_stats() output)
+# ---- 4-panel yearly trend analysis (from compute_yearly_stats() output) -------
 make_trend_panels <- function(yearly_stats, base_year, target_year, canopy_threshold, dark = FALSE) {
 
   x_by <- max(1, round((target_year - base_year) / 12))
@@ -88,7 +89,8 @@ make_trend_panels <- function(yearly_stats, base_year, target_year, canopy_thres
              y = max(yearly_stats$forest_area_ha / 1000, na.rm = TRUE) * 0.97,
              label = paste0("base year: ", base_year), hjust = 0,
              colour = "steelblue", size = 3.2) +
-    scale_x_continuous(breaks = seq(base_year, target_year, by = 1)) + # or by = x_by
+    #scale_x_continuous(breaks = seq(base_year, target_year, by = x_by)) +
+    scale_x_continuous(breaks = seq(base_year, target_year, by = 1)) +
     labs(subtitle = paste0("baseline: ", base_year, " | canopy threshold: ", canopy_threshold, "%"),
          x = NULL, y = "forest area (000 ha)") +
     theme(panel.grid.minor = element_blank(), axis.text.x = element_text(angle = 45, hjust = 1))
@@ -100,6 +102,7 @@ make_trend_panels <- function(yearly_stats, base_year, target_year, canopy_thres
         geom_smooth(method = "loess", span = 0.75, se = FALSE, colour = "#990000", linewidth = 1),
         colour = "indianred", sigma = 5, expand = 5)
       else geom_smooth(method = "loess", span = 0.75, se = FALSE, colour = "#6d0c0c", linewidth = 1) } +
+    #scale_x_continuous(breaks = seq(base_year + 1, target_year, by = x_by)) +
     scale_x_continuous(breaks = seq(base_year + 1, target_year, by = 1)) +
     labs(subtitle = "loss per calendar year | trend line: LOESS smoother", x = NULL, y = "annual loss (000 ha)") +
     theme(panel.grid.minor = element_blank(), axis.text.x = element_text(angle = 45, hjust = 1))
@@ -176,6 +179,7 @@ make_trend_panels <- function(yearly_stats, base_year, target_year, canopy_thres
     scale_colour_manual(
       values = stats::setNames(c("#cc3333", "#3333cc"), c(loss_lab, net_lab))
     ) +
+    #scale_x_continuous(breaks = seq(base_year + 1, target_year, by = x_by)) +
     scale_x_continuous(breaks = seq(base_year + 1, target_year, by = 1)) +
     labs(
       subtitle = paste0("cumulative loss & net change from ", base_year),
@@ -202,6 +206,7 @@ make_trend_panels <- function(yearly_stats, base_year, target_year, canopy_thres
     geom_hline(yintercept = 100, linetype = "dashed", colour = "steelblue") +
     annotate("text", x = base_year + 0.2, y = 100.5, label = paste0("100% = forest at ", base_year),
              hjust = 0, size = 3, colour = "steelblue") +
+    #scale_x_continuous(breaks = seq(base_year, target_year, by = x_by)) +
     scale_x_continuous(breaks = seq(base_year, target_year, by = 1)) +
     coord_cartesian(ylim = c(NA, 102)) +
     labs(subtitle = paste0("% forest remaining vs ", base_year, " baseline"), x = "year", y = "% forest remaining") +
@@ -238,6 +243,12 @@ make_trend_panels <- function(yearly_stats, base_year, target_year, canopy_thres
 
   combined <- (p1 + p2) / (p3 + p4) +
     plot_annotation(
+      #title = "Forest change trend analysis",
+      # subtitle = paste0(
+      #   "base year: ", base_year,
+      #   "  |  target year: ", target_year,
+      #   "  |  canopy threshold: \u2265", canopy_threshold, "%"
+      # ),
       theme = theme(
         plot.title = element_text(
           face = "bold",
@@ -260,7 +271,7 @@ make_trend_panels <- function(yearly_stats, base_year, target_year, canopy_thres
 }
 
 
-# Single-year % tree cover map (from plot_treecover())
+# ---- Single-year % tree cover map (from plot_treecover()) ----------------------
 #' @param r single-layer SpatRaster of % tree cover, ALREADY projected to EPSG:4326
 #' @param aoi_wgs sf AOI in EPSG:4326
 make_treecover_plot <- function(r, aoi_wgs, year_label) {
@@ -287,7 +298,7 @@ make_treecover_plot <- function(r, aoi_wgs, year_label) {
     )
 }
 
-# Loss-year map (from the loss_df visualisation block)
+# ---- Loss-year map (from the loss_df visualisation block) ---------------------
 #' @param loss_raster single-layer SpatRaster (lossyear, 0-N code) in projected CRS
 #' @param aoi_layer sf AOI in the SAME crs as loss_raster (usually UTM)
 #' @param palette_type "viridis" (continuous colour ramp) or "distinct" (one
@@ -304,7 +315,7 @@ make_loss_year_plot <- function(loss_raster, aoi_layer, palette_type = "viridis"
   
   p <- ggplot(loss_df, aes(x = x, y = y, fill = year)) + geom_raster()
   
-  # Using the shared palette supplied by the server.
+  # Use the shared palette supplied by the server.
   # This ensures the static map uses exactly the same colours as the
   # interactive Leaflet map.
   
@@ -368,7 +379,7 @@ make_loss_year_plot <- function(loss_raster, aoi_layer, palette_type = "viridis"
 }
 
 
-# Multi-year facet builders (forest cover & annual loss)
+# ---- Multi-year facet builders (forest cover & annual loss) -------------------
 # (Per-year data.frames are now built directly inside the facet_btn observer,
 # in the same loop iteration each SpatRaster is created in - see the note
 # there about why. make_forest_facet_plot()/make_loss_facet_plot() below just
@@ -426,7 +437,7 @@ make_loss_facet_plot <- function(loss_df, aoi_layer, canopy_threshold, n_cols = 
     )
 }
 
-# misc small helpers
+# ---- misc small helpers ---------------------------------------------------------
 gfc_dataset_year <- function(dataset) as.integer(stringr::str_extract(dataset, "(?<=GFC-?)[0-9]{4}"))
 
 # Zip a folder's contents into a single file - used for "download all annual layers".

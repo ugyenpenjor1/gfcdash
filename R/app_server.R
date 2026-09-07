@@ -35,7 +35,7 @@ gfc_app_server <- function(input, output, session) {
   # Set per-launch (not per-package-build) - safe to call every session.
   options(shiny.maxRequestSize = 200 * 1024^2)
 
-  # per-session temp workspace
+  # ---- per-session temp workspace ------------------------------------------
   # Everything this app writes (merged rasters, thresholded rasters, annual
   # layers, plots, animations) lives here. Nothing is ever hard-coded to a
   # fixed path, and this folder is deleted automatically when the session ends.
@@ -88,6 +88,7 @@ gfc_app_server <- function(input, output, session) {
     tryCatch(clear_layer(map, id), error = function(e) map)
   }
   
+  ####
   bbox_to_zoom <- function(bbox, padding_factor = 1.4) {
     width  <- as.numeric(bbox["xmax"] - bbox["xmin"])
     height <- as.numeric(bbox["ymax"] - bbox["ymin"])
@@ -96,6 +97,7 @@ gfc_app_server <- function(input, output, session) {
     min(max(zoom, 1), 18)
   }
   
+  ####
   optimal_ncol <- function(n, max_col = 3) {
     if (n <= 1) return(1)
     
@@ -191,6 +193,7 @@ gfc_app_server <- function(input, output, session) {
     })
   })
   
+  ####
   observeEvent(input$use_drawn_aoi, {
     withProgress(message = "Using drawn polygon...", value = 0, {
       tryCatch({
@@ -250,6 +253,7 @@ gfc_app_server <- function(input, output, session) {
     })
   })
   
+  ####
   observeEvent(input$clear_drawn_aoi, {
     maplibre_proxy("aoi_map") |>
       safe_clear("aoi-fill") |>
@@ -285,6 +289,7 @@ gfc_app_server <- function(input, output, session) {
     rv$facet_done <- FALSE
     rv$animation_done <- FALSE
      
+    ####
     maplibre_proxy("aoi_map") |>
       safe_clear("aoi-fill") |>
       safe_clear("aoi-outline") |>
@@ -344,6 +349,7 @@ gfc_app_server <- function(input, output, session) {
       ) |>
       add_raster_layer(id = "osm", source = "osm-src", visibility = "none") |>
       add_globe_minimap() |>
+      ####
       add_draw_control(
         position = "top-left",
         rectangle = TRUE,
@@ -523,7 +529,8 @@ gfc_app_server <- function(input, output, session) {
         duration = 12
       )
     }, finally = {
-      # close the progress modal - runs whether the calculation succeeds or fails.
+      # ALWAYS close the progress modal
+      # This runs whether the calculation succeeds or fails.
       gfc_progress_close()
       
     })
@@ -798,7 +805,8 @@ gfc_app_server <- function(input, output, session) {
   
   # CLASSIFIED MAP COLOUR PALETTE
   # Explicitly provide `levels` so that the class-code ordering is preserved.
-  # GFC_CLASS_CODES is deliberately ordered: 1, 2, 3, 4, 5, 6, 0
+  # GFC_CLASS_CODES is deliberately ordered:
+  # 1, 2, 3, 4, 5, 6, 0
   classified_pal <- leaflet::colorFactor(
     palette = unname(GFC_CLASS_COLORS[as.character(GFC_CLASS_CODES)]),
     domain = GFC_CLASS_CODES,
@@ -814,7 +822,10 @@ gfc_app_server <- function(input, output, session) {
     addProviderTiles(providers$Esri.WorldImagery, group = "Satellite") %>%
       # Base map 2
       addProviderTiles(providers$OpenStreetMap, group = "OpenStreetMap") %>%
+  
     # Classified raster
+    # Because this is an overlay group, Leaflet automatically gives the user
+    # an ON/OFF checkbox for the raster layer.
     addRasterImage(
       classified_layer_ll(),
       colors = classified_pal,
@@ -823,6 +834,7 @@ gfc_app_server <- function(input, output, session) {
       group = "Classified raster",
       options = leaflet::gridOptions(pane = "classified_raster_pane")
     ) %>%
+    # AOI boundary
     addPolygons(
       data = sf::st_zm(rv$aoi_wgs),
       fill = FALSE,
@@ -830,6 +842,7 @@ gfc_app_server <- function(input, output, session) {
       weight = 2,
       group = "AOI boundary"
     ) %>%
+    # Legend
     addLegend(
       position = "bottomright",
       colors = unname(GFC_CLASS_COLORS[as.character(GFC_CLASS_CODES)]),
@@ -837,6 +850,12 @@ gfc_app_server <- function(input, output, session) {
       title = "Cover class",
       opacity = 1
     ) %>%
+      
+    # Layer controls
+    # `collapsed = FALSE` keeps the controls visible.
+    # The user can now toggle:
+    #   Classified raster  ON/OFF
+    #   AOI boundary       ON/OFF
     addLayersControl(
       baseGroups = c("Satellite", "OpenStreetMap"),
       overlayGroups = c("Classified raster", "AOI boundary"),
@@ -1055,7 +1074,7 @@ gfc_app_server <- function(input, output, session) {
     make_treecover_plot(rv$treecover_ll_df, rv$aoi_wgs, rv$treecover_year_selected)
   })
 
-  # Interactive (Leaflet) version of the tree cover % map
+  # ---- Interactive (Leaflet) version of the tree cover % map --------------------
   treecover_pal <- leaflet::colorNumeric(
     palette = c("#E1E1E1", "#FFE5AD", "#B4A022", "#61790A", "#245231", "#003B47"),
     domain = c(0, 100), na.color = "transparent"
@@ -1127,6 +1146,9 @@ gfc_app_server <- function(input, output, session) {
       )
     
   }, ignoreInit = TRUE)
+  
+  
+  # }, ignoreInit = TRUE)
 
   output$download_treecover_plot <- downloadHandler(
     filename = function() paste0("gfc_treecover_", rv$treecover_year_selected, ".png"),
@@ -1155,6 +1177,10 @@ gfc_app_server <- function(input, output, session) {
           plots[[i]] <- make_treecover_plot(r_ll, rv$aoi_wgs, yrs[i])
           incProgress(1 / length(yrs), detail = paste("Year", yrs[i]))
         }
+        # combined <- patchwork::wrap_plots(plots, ncol = 2) +
+        #   patchwork::plot_layout(guides = "collect") &
+        #   theme(legend.position = "bottom")
+        ####
         ncol_dynamic <- optimal_ncol(length(yrs))
         
         combined <- patchwork::wrap_plots(plots, ncol = ncol_dynamic) +
@@ -1196,7 +1222,7 @@ gfc_app_server <- function(input, output, session) {
     
     if (
       identical(input$loss_palette, "distinct") &&
-      isTRUE(.has_randomcoloR)
+      isTRUE(pkg_available("randomcoloR"))
     ) {
       cols <- randomcoloR::distinctColorPalette(length(years))
     } else {
@@ -1340,7 +1366,7 @@ gfc_app_server <- function(input, output, session) {
         ) %>%
         fitBounds(bbox[["xmin"]], bbox[["ymin"]], bbox[["xmax"]], bbox[["ymax"]])
       
-      if (.has_leafem) {
+      if (pkg_available("leafem")) {
         m <- m %>%
           leafem::addImageQuery(
             rv$loss_year_map_r, project = FALSE, layerId = "Loss year",
@@ -1523,6 +1549,9 @@ gfc_app_server <- function(input, output, session) {
         if (i %% 2L == 0L) {
           gc(verbose = FALSE)
         }
+        
+        # # Release temporary objects
+        # rm(not_lost_by_yr, cond_A, cond_B, cover_mask, cdf)
       }
       
       gfc_progress_update(
@@ -1540,6 +1569,8 @@ gfc_app_server <- function(input, output, session) {
         loss_df <- data.frame(x = numeric(0), y = numeric(0), value = numeric(0), year = integer(0))
       }
       
+      # Release source helper objects that are no longer needed.
+      #
       # Do NOT remove tree_r/loss_r/gain_r because they are only
       # local references anyway, but releasing them here can help
       # memory before ggplot construction.
@@ -1776,7 +1807,7 @@ observeEvent(input$build_animation_btn, {
     
   }, finally = {
     
-    # close the custom progress spinner
+    # Always close the custom progress spinner
     gfc_progress_close()
     
   })

@@ -1,12 +1,15 @@
 # Small internal utilities shared across the package.
 #
-# IMPORTANT PACKAGING NOTE:
-# Top-level statements in R/ files are evaluated once, at build/install 
-# time, on the developer's machine - the resulting TRUE/FALSE would get 
-# baked into the package and shipped unchanged to every user, regardless 
-# of what they actually have installed. These are now computed in 
-# .onLoad() (see zzz.R) instead, so each user's own R session determines 
-# its own values correctly.
+#' Check whether an optional (Suggests-only) package is installed
+#'
+#' Used to gate optional plot styling / hover-query features that degrade
+#' gracefully if the relevant package isn't installed, rather than being a
+#' hard dependency of gfcdash itself.
+#'
+#' @param pkg Character. Package name to check.
+#' @return `TRUE`/`FALSE`.
+#' @keywords internal
+pkg_available <- function(pkg) requireNamespace(pkg, quietly = TRUE)
 
 #' `%||%`
 #'
@@ -45,7 +48,7 @@ update_required_packages <- function(pkgs = required_pkgs) {
     message("Could not check for updates (no internet connection?).")
     return(invisible(NULL))
   }
-  to_update <- intersect(pkgs, rownames(old))
+  to_update <- base::intersect(pkgs, rownames(old))
   if (length(to_update) > 0) {
     message("Updating: ", paste(to_update, collapse = ", "))
     utils::install.packages(to_update, repos = "https://cloud.r-project.org")
