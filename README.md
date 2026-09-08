@@ -11,7 +11,7 @@ year-by-year forest cover and loss statistics, build classified change
 maps and multi-panel comparisons, and animate the full time series.
 </td>
 <td style="border: 1px solid transparent; text-align: right;">
-<img src="man/figures/gfcdash_logo.png" width="320">
+<img src="man/figures/gfcdash_logo.png" width="370">
 </td>
 </tr>
 </table>
@@ -26,7 +26,7 @@ automatically the first time you install `gfcdash`.
 
 ```r
 if (!requireNamespace("remotes", quietly = TRUE)) install.packages("remotes")
-remotes::install_github("yourusername/gfcdash")
+remotes::install_github("ugyenpenjor1/gfcdash")
 ```
 
 ### From CRAN (once published)
