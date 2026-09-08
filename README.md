@@ -29,7 +29,9 @@ install.packages("gfcdash")
 
 ```r
 library(gfcdash)
-run_gfc_dashboard()
+run_gfc_dashboard()                 # default - opens in your web browser
+run_gfc_dashboard(ui = "window")    # RStudio's own pop-up window
+run_gfc_dashboard(ui = "pane")      # RStudio's viewer pane (docked inside the IDE)
 ```
 
 This opens the dashboard in your default web browser. Everything the
