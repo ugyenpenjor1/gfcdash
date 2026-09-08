@@ -29,6 +29,7 @@ export(threshold_gfc)
 export(gfc_stats)
 export(update_required_packages)
 
+import(ggfx)
 import(shiny)
 import(shinydashboard)
 import(shinyjs)

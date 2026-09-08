@@ -31,13 +31,68 @@ pkg_available <- function(pkg) requireNamespace(pkg, quietly = TRUE)
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0 || is.na(a)) b else a
 
 # Required runtime dependencies (kept in sync with DESCRIPTION's Imports).
-# Used only by update_required_packages() for the "Check for package
-# updates" button - ordinary loading/installation of these is already
-# handled automatically by R when a user installs this package.
 required_pkgs <- c("shiny", "shinydashboard", "shinyjs", "shinyWidgets", "sf", "terra",
                     "leaflet", "leafem", "mapgl", "RCurl", "stringr", "DT", "ggplot2",
                     "patchwork", "dplyr", "tidyr", "tidyterra", "scales", "animation",
-                    "jsonlite")
+                    "jsonlite", "ggfx", "viridisLite", "zip", "units", "hrbrthemes",
+                    "randomcoloR")
+
+#' Make sure every gfcdash dependency is actually installed, and install
+#' anything missing
+#'
+#' Called automatically at the start of \code{\link{run_gfc_dashboard}}, so
+#' this runs fresh every launch - not just once at package-install time.
+#' This is what catches the case that silently bit us before: R gets
+#' upgraded (which on Windows typically starts you with a brand new, empty
+#' package library), or a single package fails to install for some
+#' unrelated reason, and the dashboard would otherwise just quietly run
+#' with reduced features (or a plain crash) with no explanation to a user
+#' who has no way to diagnose that themselves.
+#'
+#' If anything needs installing, this prints a plain-language message and
+#' installs it right then, before the dashboard UI is built. If a package
+#' still can't be installed afterward (e.g. no internet connection), this
+#' stops with a clear, actionable message rather than letting the app
+#' launch into a silently broken state.
+#'
+#' @param pkgs Character vector of package names to check. Defaults to
+#'   gfcdash's own required packages.
+#' @return Invisibly, `NULL`. Called for its side effect of installing
+#'   missing packages and messaging progress.
+#' @keywords internal
+ensure_gfcdash_dependencies <- function(pkgs = required_pkgs) {
+  missing_pkgs <- pkgs[!vapply(pkgs, requireNamespace, logical(1), quietly = TRUE)]
+
+  if (length(missing_pkgs) == 0) {
+    return(invisible(NULL))
+  }
+
+  message(
+    "gfcdash needs ", length(missing_pkgs), " package(s) that aren't installed yet: ",
+    paste(missing_pkgs, collapse = ", "), ".\n",
+    "Installing them now - this is a one-time step and may take a minute..."
+  )
+
+  utils::install.packages(missing_pkgs, repos = "https://cloud.r-project.org", dependencies = TRUE)
+
+  still_missing <- missing_pkgs[!vapply(missing_pkgs, requireNamespace, logical(1), quietly = TRUE)]
+
+  if (length(still_missing) > 0) {
+    stop(
+      "gfcdash could not install the following required package(s): ",
+      paste(still_missing, collapse = ", "), ".\n",
+      "This usually means there's no internet connection, or CRAN is temporarily ",
+      "unreachable. Please check your connection and try running run_gfc_dashboard() ",
+      "again. If the problem continues, try running this line yourself and read the ",
+      "error message it gives:\n\n  install.packages(c(\"",
+      paste(still_missing, collapse = "\", \""), "\"))",
+      call. = FALSE
+    )
+  }
+
+  message("All required packages are now installed. Launching the dashboard...")
+  invisible(NULL)
+}
 
 #' Check for and install updates to gfcdash's dependency packages
 #'

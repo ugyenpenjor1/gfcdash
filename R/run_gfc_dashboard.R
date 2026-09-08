@@ -11,11 +11,16 @@
 #' session ends. Nothing is written outside that folder unless the user
 #' explicitly downloads a result.
 #'
-#' @param launch.browser Logical, or a function. Passed straight through to
-#'   \code{\link[shiny]{runApp}}. Defaults to the standard Shiny/RStudio
-#'   behaviour: a pop-up window when run from inside RStudio, the system
-#'   default browser otherwise. Pass \code{TRUE} explicitly if you always
-#'   want the system browser regardless of where this is run from.
+#' The first time this is called after a fresh install of R (or if any
+#' dependency somehow went missing), it automatically checks for and
+#' installs anything needed before opening the dashboard - you don't need
+#' to install or manage any packages yourself.
+#'
+#' @param ui Where the dashboard opens. \code{"browser"} (the default)
+#'   always opens it in your system's default web browser - this is how the
+#'   original script behaved. \code{"window"} uses RStudio's own pop-up
+#'   window when run from inside RStudio (falling back to the browser
+#'   outside RStudio). \code{"pane"} opens it in RStudio's Viewer pane.
 #' @param ... Additional arguments passed on to \code{\link[shiny]{runApp}}
 #'   (e.g. \code{port}, \code{host}).
 #'
@@ -24,11 +29,23 @@
 #'
 #' @examples
 #' if (interactive()) {
-#'   run_gfc_dashboard()
+#'   run_gfc_dashboard()                 # opens in your default browser
+#'   run_gfc_dashboard(ui = "window")    # RStudio pop-up window
+#'   run_gfc_dashboard(ui = "pane")      # RStudio Viewer pane
 #' }
 #'
 #' @export
-run_gfc_dashboard <- function(launch.browser = getOption("shiny.launch.browser", interactive()), ...) {
+run_gfc_dashboard <- function(ui = c("browser", "window", "pane"), ...) {
+  ui <- match.arg(ui)
+
+  ensure_gfcdash_dependencies()
+
+  launch_browser <- switch(ui,
+    browser = TRUE,
+    window  = getOption("shiny.launch.browser", interactive()),
+    pane    = getOption("viewer", TRUE)
+  )
+
   app <- shiny::shinyApp(ui = gfc_app_ui(), server = gfc_app_server)
-  shiny::runApp(app, launch.browser = launch.browser, ...)
+  shiny::runApp(app, launch.browser = launch_browser, ...)
 }
