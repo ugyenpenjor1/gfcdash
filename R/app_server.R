@@ -1800,6 +1800,7 @@ observeEvent(input$build_animation_btn, {
     #   duration = 4
     # )
     
+    ####
     showNotification(
       paste0("Animation created and saved to: ", out_path),
       type = "message",
@@ -1872,10 +1873,20 @@ outputOptions(
 #   }
 # )
 
+# output$animation_saved_msg <- renderUI({
+#   req(rv$animation_path)
+#   tags$p(
+#     tags$b("Saved to: "), tags$code(rv$animation_path)
+#   )
+# })
+
+####
 output$animation_saved_msg <- renderUI({
   req(rv$animation_path)
   tags$p(
-    tags$b("Saved to: "), tags$code(rv$animation_path)
+    tags$b("Temporary file: "), tags$code(rv$animation_path),
+    tags$br(),
+    tags$em("This is stored in a temporary folder and will be deleted when the app closes. Use the download button below to keep a permanent copy.")
   )
 })
 
@@ -1888,15 +1899,15 @@ output$animation_display <- renderUI({
   #   )
   if (rv$animation_type == "gif") {
     div(
-      style = "max-width: 500px;",
+      style = "max-width: 650px;",
       imageOutput("animation_gif_img", height = "auto")
     )
   } else {
     tags$iframe(
       src = file.path(paste0("anim_", session$token), basename(rv$animation_path)),
-      width = "100%",
-      height = "600px",
-      style = "border:none;"
+      width = "650px",
+      height = "700px",
+      style = "border:none; display:block;"
     )
   }
 })
@@ -1916,7 +1927,7 @@ output$animation_gif_img <- renderImage({
   list(
     src = normalizePath(rv$animation_path),
     contentType = "image/gif",
-    width = 450,
+    width = 600,
     height = "auto"
   )
 }, deleteFile = FALSE)
@@ -1945,15 +1956,30 @@ output$download_animation <- downloadHandler(
       # html_file <- basename(rv$animation_path)
       # lib_dir   <- file.path(anim_dir, paste0(tools::file_path_sans_ext(html_file), "_files"))
       
+      ####
+      # anim_dir  <- dirname(rv$animation_path)
+      # html_file <- basename(rv$animation_path)
+      # lib_dir   <- file.path(anim_dir, paste0(tools::file_path_sans_ext(html_file), "_imgs"))
+      # 
+      # files_to_zip <- html_file
+      # if (dir.exists(lib_dir)) {
+      #   files_to_zip <- c(files_to_zip, basename(lib_dir))
+      # }
+      
+      ####
+      # HTML animation needs its file PLUS its supporting folders:
+      # "<basename>_imgs" (the frame PNGs) and the shared "css" and "js" folders
       anim_dir  <- dirname(rv$animation_path)
       html_file <- basename(rv$animation_path)
-      lib_dir   <- file.path(anim_dir, paste0(tools::file_path_sans_ext(html_file), "_imgs"))
+      imgs_dir  <- paste0(tools::file_path_sans_ext(html_file), "_imgs")
       
       files_to_zip <- html_file
-      if (dir.exists(lib_dir)) {
-        files_to_zip <- c(files_to_zip, basename(lib_dir))
+      for (support_item in c(imgs_dir, "css", "js")) {
+        if (dir.exists(file.path(anim_dir, support_item))) {
+          files_to_zip <- c(files_to_zip, support_item)
+        }
       }
-      
+
       old_wd <- setwd(anim_dir)
       on.exit(setwd(old_wd), add = TRUE)
       
