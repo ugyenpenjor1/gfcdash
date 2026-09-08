@@ -4,7 +4,7 @@
 <h1>
 gfcdash
 </h1>
-An interactive Shiny dashboard for Global Forest Change (GFC) analysis.
+An interactive Shiny dashboard for forest change analysis.
 Upload a shapefile or draw an Area of Interest (AOI) directly on a 3D globe,
 download and threshold the relevant Hansen et al. GFC tiles, compute
 year-by-year forest cover and loss statistics, build classified change
@@ -27,12 +27,6 @@ automatically the first time you install `gfcdash`.
 ```r
 if (!requireNamespace("remotes", quietly = TRUE)) install.packages("remotes")
 remotes::install_github("ugyenpenjor1/gfcdash")
-```
-
-### From CRAN (once published)
-
-```r
-install.packages("gfcdash")
 ```
 
 ## Usage
@@ -75,11 +69,12 @@ dashboard creates during a session - downloaded Hansen tiles, merged and
 thresholded rasters, annual layers, plots, and animations - is written to
 a private, temporary folder that is deleted automatically when the
 session ends. You never need to set or think about a file path; anything
-you want to keep, download using the buttons provided in the app.
+you want to keep, download using the buttons provided in the app.*Note that the
+animated .gif is saved in C:\Users\yourmachinename\Documents.*
 
 ## Keeping dependencies up to date
 
-From inside the dashboard (About tab), click "Check for Package Updates"
+From inside the dashboard (About tab), click "Check for package updates"
 to check whether any of gfcdash's dependencies have newer CRAN versions
 available, and install them if so. This is a manual, on-demand check -
 dependencies are never silently auto-updated.
