@@ -22,6 +22,7 @@
 #' @import scales
 #' @import animation
 #' @import jsonlite
+#' @import zip
 ################################################################################
 # SECTION 4: SERVER
 ################################################################################
@@ -1811,59 +1812,315 @@ observeEvent(input$build_animation_btn, {
 })
 
 
-output$animation_done <- reactive({
-  rv$animation_done
-})
-
-outputOptions(
-  output,
-  "animation_done",
-  suspendWhenHidden = FALSE
-)
-
-
-output$animation_display <- renderUI({
-  req(rv$animation_done)
+# output$animation_done <- reactive({
+#   rv$animation_done
+# })
+# 
+# outputOptions(
+#   output,
+#   "animation_done",
+#   suspendWhenHidden = FALSE
+# )
+# 
+# 
+# output$animation_display <- renderUI({
+#   req(rv$animation_done)
+#   
+#   if (rv$animation_type == "gif") {
+#     imageOutput(
+#       "animation_gif_img",
+#       height = "500px"
+#     )
+#   } else {
+#     helpText(
+#       "HTML animation created - use the download button below, then open the file in a web browser to view it."
+#     )
+#   }
+# })
+# 
+# 
+# output$animation_gif_img <- renderImage({
+#   req(rv$animation_path)
+#   
+#   list(
+#     src = rv$animation_path,
+#     contentType = "image/gif",
+#     height = 480
+#   )
+#   
+# }, deleteFile = FALSE)
+# 
+# 
+# output$download_animation <- downloadHandler(
+#   
+#   filename = function() {
+#     basename(rv$animation_path)
+#   },
+#   
+#   content = function(file) {
+#     file.copy(
+#       rv$animation_path,
+#       file,
+#       overwrite = TRUE
+#     )
+#   }
+# )
   
-  if (rv$animation_type == "gif") {
-    imageOutput(
-      "animation_gif_img",
-      height = "500px"
-    )
-  } else {
-    helpText(
-      "HTML animation created - use the download button below, then open the file in a web browser to view it."
-    )
-  }
-})
-
-
-output$animation_gif_img <- renderImage({
-  req(rv$animation_path)
+  # ---- Animation display and download ----------------------------------------
   
-  list(
-    src = rv$animation_path,
-    contentType = "image/gif",
-    height = 480
+  # Make the temporary animation folder available to the browser.
+  # This is needed because the browser cannot directly access an R
+  # filesystem path such as C:/Users/.../AppData/Local/Temp/...
+  animation_resource_dir <- file.path(session_dir, "animation")
+  
+  shiny::addResourcePath(
+    prefix = paste0("gfc_animation_", session$token),
+    directoryPath = animation_resource_dir
   )
   
-}, deleteFile = FALSE)
-
-
-output$download_animation <- downloadHandler(
+  # Tell the UI when the animation has finished rendering.
+  output$animation_done <- reactive({
+    rv$animation_done
+  })
   
-  filename = function() {
-    basename(rv$animation_path)
-  },
+  outputOptions(
+    output,
+    "animation_done",
+    suspendWhenHidden = FALSE
+  )
   
-  content = function(file) {
-    file.copy(
-      rv$animation_path,
-      file,
-      overwrite = TRUE
+  
+  # Create the preview shown in the dashboard.
+  #
+  # GIF:
+  #   Display directly with an <img>.
+  #
+  # HTML:
+  #   Display the generated HTML animation inside an iframe.
+  #
+  output$animation_display <- renderUI({
+    
+    req(rv$animation_done, rv$animation_path, rv$animation_type)
+    
+    animation_url <- paste0(
+      session$clientData$url_protocol,
+      "://",
+      session$clientData$url_hostname,
+      if (!is.null(session$clientData$url_port) &&
+          nzchar(session$clientData$url_port)) {
+        paste0(":", session$clientData$url_port)
+      } else {
+        ""
+      },
+      session$clientData$url_pathname,
+      "gfc_animation_",
+      session$token,
+      "/",
+      basename(rv$animation_path)
     )
-  }
-)
+    
+    if (rv$animation_type == "gif") {
+      
+      tagList(
+        
+        div(
+          style = "
+          text-align: center;
+          margin: 15px 0;
+        ",
+          
+          tags$img(
+            src = animation_url,
+            style = "
+            max-width: 100%;
+            height: auto;
+            max-height: 500px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+          "
+          )
+        ),
+        
+        div(
+          style = "
+          margin-top: 15px;
+          padding: 12px 15px;
+          background-color: #f5f5f5;
+          border-left: 4px solid #3c8dbc;
+          border-radius: 3px;
+        ",
+          
+          strong("Animation created successfully."),
+          br(),
+          span(
+            "The GIF is displayed above. Use the download button below ",
+            "to save a copy to a folder of your choice."
+          )
+        )
+      )
+      
+    } else {
+      
+      tagList(
+        
+        div(
+          style = "
+          width: 100%;
+          margin: 15px 0;
+        ",
+          
+          tags$iframe(
+            src = animation_url,
+            style = "
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+          ",
+            frameborder = "0"
+          )
+        ),
+        
+        div(
+          style = "
+          margin-top: 15px;
+          padding: 12px 15px;
+          background-color: #f5f5f5;
+          border-left: 4px solid #3c8dbc;
+          border-radius: 3px;
+        ",
+          
+          strong("Animation created successfully."),
+          br(),
+          span(
+            "The HTML animation is displayed above. Use the download button below ",
+            "to download the complete HTML animation as a ZIP file."
+          )
+        )
+      )
+    }
+  })
+  
+  
+  # Download the animation.
+  #
+  # GIF:
+  #   Download the GIF directly.
+  #
+  # HTML:
+  #   Create a ZIP containing BOTH the HTML file and its associated
+  #   image directory. This ensures the downloaded HTML animation
+  #   continues to work when the user opens it on their computer.
+  output$download_animation <- downloadHandler(
+    
+    filename = function() {
+      
+      req(rv$animation_path, rv$animation_type)
+      
+      if (rv$animation_type == "gif") {
+        basename(rv$animation_path)
+      } else {
+        paste0(
+          tools::file_path_sans_ext(
+            basename(rv$animation_path)
+          ),
+          ".zip"
+        )
+      }
+    },
+    
+    content = function(file) {
+      
+      req(rv$animation_path, rv$animation_type)
+      
+      if (rv$animation_type == "gif") {
+        
+        # ---- GIF download -----------------------------------------------
+        file.copy(
+          from = rv$animation_path,
+          to = file,
+          overwrite = TRUE
+        )
+        
+      } else {
+        
+        # ---- HTML download ----------------------------------------------
+        #
+        # saveHTML() creates:
+        #
+        #   gfc_animation.html
+        #   gfc_animation_imgs/
+        #       1.png
+        #       2.png
+        #       ...
+        #
+        # Both are required, so package them together.
+        
+        html_file <- rv$animation_path
+        html_dir <- file.path(
+          dirname(html_file),
+          paste0(
+            tools::file_path_sans_ext(
+              basename(html_file)
+            ),
+            "_imgs"
+          )
+        )
+        
+        if (!file.exists(html_file)) {
+          stop("The HTML animation file could not be found.")
+        }
+        
+        if (!dir.exists(html_dir)) {
+          stop("The HTML animation image directory could not be found.")
+        }
+        
+        # Create a temporary directory containing the exact structure
+        # the user needs after unzipping.
+        zip_dir <- tempfile(
+          pattern = "gfc_animation_download_"
+        )
+        
+        dir.create(zip_dir, recursive = TRUE)
+        
+        file.copy(
+          from = html_file,
+          to = file.path(zip_dir, basename(html_file)),
+          overwrite = TRUE
+        )
+        
+        file.copy(
+          from = html_dir,
+          to = file.path(zip_dir, basename(html_dir)),
+          recursive = TRUE,
+          overwrite = TRUE
+        )
+        
+        old_wd <- getwd()
+        on.exit(setwd(old_wd), add = TRUE)
+        
+        setwd(zip_dir)
+        
+        zip::zip(
+          zipfile = file,
+          files = c(
+            basename(html_file),
+            basename(html_dir)
+          ),
+          flags = "-r"
+        )
+        
+        # Clean up our temporary download directory.
+        unlink(
+          zip_dir,
+          recursive = TRUE,
+          force = TRUE
+        )
+      }
+    }
+  )
+  
 
 # Package update
 observeEvent(input$check_updates, {

@@ -461,32 +461,142 @@ Shiny.addCustomMessageHandler('gfcProgress', function(msg) {
         )
       ),
 
+      # ########################################################################
+      # # TAB 6: ANIMATION
+      # ########################################################################
+      # tabItem(
+      #   tabName = "animation",
+      #   fluidRow(
+      #     box(
+      #       title = "Animate forest change through time", status = "primary", solidHeader = TRUE, width = 12,
+      #       helpText("Requires the annual classified stack to be built first (Map visualisations > Classified change map). ",
+      #                "Rendering an animation can take a while, especially at higher resolution or for many years."),
+      #       fluidRow(
+      #         column(3, radioButtons("anim_type", "Format:", choices = c("GIF" = "gif", "HTML" = "html"), selected = "gif")),
+      #         column(3, numericInput("anim_dpi", "Resolution (dpi):", value = 120, min = 60, max = 300, step = 10)),
+      #         column(3, checkboxInput("anim_plot_aoi", "Show AOI outline", value = TRUE)),
+      #         column(3, checkboxInput("anim_crop_aoi", "Crop to AOI", value = FALSE))
+      #       ),
+      #       actionButton("build_animation_btn", "Create animation", icon = icon("film"), class = "btn-success btn-lg"),
+      #       hr(),
+      #       conditionalPanel(
+      #         condition = "output.animation_done",
+      #         uiOutput("animation_display"),
+      #         downloadButton("download_animation", "Download animation file", class = "btn-success")
+      #       )
+      #     )
+      #   )
+      # ),
+      
       ########################################################################
       # TAB 6: ANIMATION
       ########################################################################
       tabItem(
         tabName = "animation",
+        
         fluidRow(
+          
           box(
-            title = "Animate forest change through time", status = "primary", solidHeader = TRUE, width = 12,
-            helpText("Requires the annual classified stack to be built first (Map visualisations > Classified change map). ",
-                     "Rendering an animation can take a while, especially at higher resolution or for many years."),
-            fluidRow(
-              column(3, radioButtons("anim_type", "Format:", choices = c("GIF" = "gif", "HTML" = "html"), selected = "gif")),
-              column(3, numericInput("anim_dpi", "Resolution (dpi):", value = 120, min = 60, max = 300, step = 10)),
-              column(3, checkboxInput("anim_plot_aoi", "Show AOI outline", value = TRUE)),
-              column(3, checkboxInput("anim_crop_aoi", "Crop to AOI", value = FALSE))
+            title = "Animate forest change through time",
+            status = "primary",
+            solidHeader = TRUE,
+            width = 12,
+            
+            helpText(
+              "Requires the annual classified stack to be built first ",
+              "(Map visualisations > Classified change map). ",
+              "Rendering an animation can take a while, especially at ",
+              "higher resolution or for many years."
             ),
-            actionButton("build_animation_btn", "Create animation", icon = icon("film"), class = "btn-success btn-lg"),
+            
+            fluidRow(
+              
+              column(
+                3,
+                radioButtons(
+                  "anim_type",
+                  "Format:",
+                  choices = c(
+                    "GIF" = "gif",
+                    "HTML" = "html"
+                  ),
+                  selected = "gif"
+                )
+              ),
+              
+              column(
+                3,
+                numericInput(
+                  "anim_dpi",
+                  "Resolution (dpi):",
+                  value = 120,
+                  min = 60,
+                  max = 300,
+                  step = 10
+                )
+              ),
+              
+              column(
+                3,
+                checkboxInput(
+                  "anim_plot_aoi",
+                  "Show AOI outline",
+                  value = TRUE
+                )
+              ),
+              
+              column(
+                3,
+                checkboxInput(
+                  "anim_crop_aoi",
+                  "Crop to AOI",
+                  value = FALSE
+                )
+              )
+            ),
+            
+            actionButton(
+              "build_animation_btn",
+              "Create animation",
+              icon = icon("film"),
+              class = "btn-success btn-lg"
+            ),
+            
             hr(),
+            
             conditionalPanel(
               condition = "output.animation_done",
+              
+              h4(
+                "Animation preview",
+                style = "margin-top: 10px;"
+              ),
+              
               uiOutput("animation_display"),
-              downloadButton("download_animation", "Download animation file", class = "btn-success")
+              
+              br(),
+              
+              downloadButton(
+                "download_animation",
+                "Download animation file",
+                class = "btn-success"
+              ),
+              
+              p(
+                style = "
+            margin-top: 8px;
+            color: #777;
+            font-size: 12px;
+          ",
+                "The animation is stored temporarily by the application. ",
+                "Use the download button to save it permanently to a folder ",
+                "of your choice."
+              )
             )
           )
         )
       ),
+      
 
       ########################################################################
       # ABOUT TAB
