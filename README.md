@@ -11,7 +11,7 @@ year-by-year forest cover and loss statistics, build classified change
 maps and multi-panel comparisons, and animate the full time series.
 </td>
 <td style="border: 1px solid transparent; text-align: right;">
-<img src="man/figures/gfcdash_logo.png" width="290">
+<img src="man/figures/gfcdash_logo.png" width="320">
 </td>
 </tr>
 </table>
@@ -41,18 +41,21 @@ install.packages("gfcdash")
 library(gfcdash)
 run_gfc_dashboard()                 # default - opens in your web browser
 ```
+This opens the dashboard in your default web browser.
 
-# OR
+## OR
 ```r
 run_gfc_dashboard(ui = "window")    # RStudio's own pop-up window
 ```
+This opens the dashboard as a separate pop-up window of RStudio. 
 
-# OR
+## OR
 ```r
 run_gfc_dashboard(ui = "pane")      # RStudio's viewer pane (docked inside the IDE)
 ```
+This opens the dashboard in RStudio's Viewer pane (generally not recommended). 
 
-This opens the dashboard in your default web browser. Everything the
+Everything the
 dashboard creates during a session - downloaded Hansen tiles, merged and
 thresholded rasters, annual layers, plots, and animations - is written to
 a private, temporary folder that is deleted automatically when the
