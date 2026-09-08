@@ -2,17 +2,23 @@
 # Regenerate authoritatively with devtools::document() once you have
 # roxygen2 installed - this hand-built version is a correct starting point
 # but devtools::document() should be treated as the source of truth going
-# forward, especially if you add/remove any @export or @import tags.
+# forward.
 #
-# NOTE: every package the original script loaded via library() is imported
-# in full here (import(), not importFrom() with a hand-picked function
-# list). An earlier version tried to enumerate only the specific functions
-# used from mapgl/leaflet/etc., and repeatedly missed some - each miss
-# surfaces as "could not find function" only once a user clicks into the
-# specific tab that uses it, which is a bad way to discover a typo. Full
-# import() exactly matches how these packages behaved when loaded with
-# library() in the original script, at the cost of the cosmetic (harmless,
-# see utils_pkg.R) "replacing previous import" messages at library() time.
+# CRITICAL: the import() order below is not arbitrary - it exactly matches
+# the library() call order in the original single-file script:
+#
+#   shiny, shinydashboard, shinyjs, shinyWidgets, sf, terra, leaflet,
+#   leafem, mapgl, DT, ggplot2, patchwork, dplyr, tidyr, tidyterra, scales,
+#   animation, jsonlite
+#
+# When two packages export a function with the same name, the LAST one
+# imported wins (identical mechanics to library() attachment order). This
+# order was verified line-by-line against every masking warning R produces
+# on install, to guarantee identical collision-resolution behaviour to the
+# original, already-tested script. DO NOT reorder these without re-checking
+# against that original library() order - reordering silently changes which
+# function wins a naming collision (e.g. dplyr::intersect vs terra::intersect),
+# which can change plot output with no visible error.
 
 export(run_gfc_dashboard)
 export(check_aoi)
@@ -27,17 +33,17 @@ import(shiny)
 import(shinydashboard)
 import(shinyjs)
 import(shinyWidgets)
-import(dplyr)
-import(tidyr)
-import(ggplot2)
-import(patchwork)
 import(sf)
 import(terra)
-import(tidyterra)
 import(leaflet)
 import(leafem)
 import(mapgl)
 import(DT)
+import(ggplot2)
+import(patchwork)
+import(dplyr)
+import(tidyr)
+import(tidyterra)
 import(scales)
 import(animation)
 import(jsonlite)

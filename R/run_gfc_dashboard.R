@@ -12,8 +12,10 @@
 #' explicitly downloads a result.
 #'
 #' @param launch.browser Logical, or a function. Passed straight through to
-#'   \code{\link[shiny]{runApp}}. Defaults to \code{TRUE}, which opens the
-#'   dashboard in the system's default web browser.
+#'   \code{\link[shiny]{runApp}}. Defaults to the standard Shiny/RStudio
+#'   behaviour: a pop-up window when run from inside RStudio, the system
+#'   default browser otherwise. Pass \code{TRUE} explicitly if you always
+#'   want the system browser regardless of where this is run from.
 #' @param ... Additional arguments passed on to \code{\link[shiny]{runApp}}
 #'   (e.g. \code{port}, \code{host}).
 #'
@@ -26,7 +28,7 @@
 #' }
 #'
 #' @export
-run_gfc_dashboard <- function(launch.browser = TRUE, ...) {
+run_gfc_dashboard <- function(launch.browser = getOption("shiny.launch.browser", interactive()), ...) {
   app <- shiny::shinyApp(ui = gfc_app_ui(), server = gfc_app_server)
   shiny::runApp(app, launch.browser = launch.browser, ...)
 }
