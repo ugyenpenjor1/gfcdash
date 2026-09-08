@@ -69,8 +69,7 @@ dashboard creates during a session - downloaded Hansen tiles, merged and
 thresholded rasters, annual layers, plots, and animations - is written to
 a private, temporary folder that is deleted automatically when the
 session ends. You never need to set or think about a file path; anything
-you want to keep, download using the buttons provided in the app. *Note that the
-animated .gif is saved in C:\Users\yourmachinename\Documents.*
+you want to keep, download using the buttons provided in the app.
 
 ## Keeping dependencies up to date
 
