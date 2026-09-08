@@ -693,8 +693,18 @@ animate_annual <- function(
   dates <- seq(2000, by = 1, length.out = n_layers)
   maxpixels <- ceiling((width * height * dpi^2) / 1000) * 1000
 
+  # animation::ani.options(outdir = out_dir, ani.width = width * dpi,
+  #                         ani.height = height * dpi, verbose = FALSE)
+  
   animation::ani.options(outdir = out_dir, ani.width = width * dpi,
-                          ani.height = height * dpi, verbose = FALSE)
+                         ani.height = height * dpi, verbose = FALSE,
+                         autobrowse = FALSE)
+  
+  # Force the working directory to out_dir for the duration of the save,
+  # as a safety net against the animation package writing relative to getwd()
+  old_wd <- getwd()
+  on.exit(setwd(old_wd), add = TRUE)
+  setwd(out_dir)
 
   if (type == "gif") {
     out_file <- paste0(out_basename, ".gif")
@@ -727,7 +737,47 @@ animate_annual <- function(
        autobrowse = FALSE, title = paste(site_name, "forest change"))
   }
 
-  invisible(file.path(out_dir, if (type == "gif") paste0(out_basename, ".gif") else paste0(out_basename, ".html")))
+  # invisible(file.path(out_dir, if (type == "gif") paste0(out_basename, ".gif") else paste0(out_basename, ".html")))
+  
+  expected_file <- if (type == "gif") paste0(out_basename, ".gif") else paste0(out_basename, ".html")
+  expected_path <- file.path(out_dir, expected_file)
+  
+  if (file.exists(expected_path)) {
+    return(invisible(expected_path))
+  }
+  
+  # Not where we expected - search likely fallback locations and rescue it
+  fallback_dirs <- unique(c(old_wd, path.expand("~"), path.expand("~/Documents")))
+  found_path <- NULL
+  
+  for (d in fallback_dirs) {
+    candidate <- file.path(d, expected_file)
+    if (file.exists(candidate)) {
+      found_path <- candidate
+      break
+    }
+  }
+  
+  if (is.null(found_path)) {
+    stop("animate_annual() finished but could not locate the output file '",
+         expected_file, "' in '", out_dir, "' or in any fallback location (",
+         paste(fallback_dirs, collapse = ", "), "). ",
+         "Check that ImageMagick (for GIF) is installed and on PATH.")
+  }
+  
+  file.copy(found_path, expected_path, overwrite = TRUE)
+  
+  # For HTML, also bring along any supporting folder (e.g. "<name>_files" or "<name>_imgs")
+  if (type == "html") {
+    found_dir <- dirname(found_path)
+    support_dirs <- list.dirs(found_dir, recursive = FALSE, full.names = FALSE)
+    support_dirs <- support_dirs[startsWith(support_dirs, out_basename)]
+    for (sd in support_dirs) {
+      file.copy(file.path(found_dir, sd), out_dir, recursive = TRUE, overwrite = TRUE)
+    }
+  }
+  
+  invisible(expected_path)
 }
 
 
