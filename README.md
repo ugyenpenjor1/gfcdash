@@ -1,10 +1,20 @@
-# gfcdash
-
+<table style="border-color: transparent;">
+<tr>
+<td style="width: 80%; border: none;">
+<h1>
+gfcdash
+</h1>
 An interactive Shiny dashboard for Global Forest Change (GFC) analysis.
 Upload a shapefile or draw an Area of Interest (AOI) directly on a 3D globe,
 download and threshold the relevant Hansen et al. GFC tiles, compute
 year-by-year forest cover and loss statistics, build classified change
 maps and multi-panel comparisons, and animate the full time series.
+</td>
+<td style="border: 1px solid transparent; text-align: right;">
+<img src="man/figures/gfcdash_logo.png" width="290">
+</td>
+</tr>
+</table>
 
 ## Installation
 
@@ -30,7 +40,15 @@ install.packages("gfcdash")
 ```r
 library(gfcdash)
 run_gfc_dashboard()                 # default - opens in your web browser
+```
+
+# OR
+```r
 run_gfc_dashboard(ui = "window")    # RStudio's own pop-up window
+```
+
+# OR
+```r
 run_gfc_dashboard(ui = "pane")      # RStudio's viewer pane (docked inside the IDE)
 ```
 
