@@ -690,7 +690,7 @@ animate_annual <- function(
   type <- tolower(type)
   if (!type %in% c("gif", "html")) stop("type must be either 'gif' or 'html'.")
 
-  dates <- seq(2001, by = 1, length.out = n_layers)
+  dates <- seq(2000, by = 1, length.out = n_layers)
   maxpixels <- ceiling((width * height * dpi^2) / 1000) * 1000
 
   animation::ani.options(outdir = out_dir, ani.width = width * dpi,
