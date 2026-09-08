@@ -1733,6 +1733,11 @@ observeEvent(input$build_animation_btn, {
     anim_dir <- file.path(session_dir, "animation")
     dir.create(anim_dir, showWarnings = FALSE)
     
+    if (is.null(rv$anim_resource_registered)) {
+      addResourcePath(paste0("anim_", session$token), anim_dir)
+      rv$anim_resource_registered <- TRUE
+    }
+    
     gfc_progress_update(
       session = session,
       frac = 0.05,
@@ -1782,17 +1787,23 @@ observeEvent(input$build_animation_btn, {
     rv$animation_path <- out_path
     rv$animation_type <- input$anim_type
     rv$animation_done <- TRUE
-    
+
     gfc_progress_update(
       session = session,
       frac = 1,
       detail = "Animation created successfully."
     )
+
+    # showNotification(
+    #   "Animation created!",
+    #   type = "message",
+    #   duration = 4
+    # )
     
     showNotification(
-      "Animation created!",
+      paste0("Animation created and saved to: ", out_path),
       type = "message",
-      duration = 4
+      duration = 8
     )
     
   }, error = function(e) {
@@ -1823,60 +1834,90 @@ outputOptions(
 )
 
 
+# output$animation_display <- renderUI({
+#   req(rv$animation_done)
+#   if (rv$animation_type == "gif") {
+#     imageOutput(
+#       "animation_gif_img",
+#       height = "500px"
+#     )
+#   } else {
+#     helpText(
+#       "HTML animation created - use the download button below, then open the file in a web browser to view it."
+#     )
+#   }
+# })
+# 
+# 
+# output$animation_gif_img <- renderImage({
+#   req(rv$animation_path)
+#   list(
+#     src = rv$animation_path,
+#     contentType = "image/gif",
+#     height = 480
+#   )
+# }, deleteFile = FALSE)
+# 
+# 
+# output$download_animation <- downloadHandler(
+#   filename = function() {
+#     basename(rv$animation_path)
+#   },
+#   content = function(file) {
+#     file.copy(
+#       rv$animation_path,
+#       file,
+#       overwrite = TRUE
+#     )
+#   }
+# )
+
+output$animation_saved_msg <- renderUI({
+  req(rv$animation_path)
+  tags$p(
+    tags$b("Saved to: "), tags$code(rv$animation_path)
+  )
+})
+
 output$animation_display <- renderUI({
   req(rv$animation_done)
-
   if (rv$animation_type == "gif") {
     imageOutput(
       "animation_gif_img",
       height = "500px"
     )
   } else {
-    helpText(
-      "HTML animation created - use the download button below, then open the file in a web browser to view it."
+    tags$iframe(
+      src = file.path(paste0("anim_", session$token), basename(rv$animation_path)),
+      width = "100%",
+      height = "600px",
+      style = "border:none;"
     )
   }
 })
 
-
 output$animation_gif_img <- renderImage({
-  req(rv$animation_path)
-
+  req(rv$animation_path, file.exists(rv$animation_path))
   list(
-    src = rv$animation_path,
+    src = normalizePath(rv$animation_path),
     contentType = "image/gif",
-    height = 480
+    width = "100%",
+    height = "auto"
   )
-
 }, deleteFile = FALSE)
 
 
-output$download_animation <- downloadHandler(
-
-  filename = function() {
-    basename(rv$animation_path)
-  },
-
-  content = function(file) {
-    file.copy(
-      rv$animation_path,
-      file,
-      overwrite = TRUE
-    )
-  }
-)
-
-  # ---- Animation outputs ------------------------------------------------------
-  
-  output$animation_done <- reactive({
-    rv$animation_done
-  })
-  
-  outputOptions(
-    output,
-    "animation_done",
-    suspendWhenHidden = FALSE
-  )
+  # # ---- Animation outputs ------------------------------------------------------
+  # 
+  # output$animation_done <- reactive({
+  #   rv$animation_done
+  # })
+  # 
+  # outputOptions(
+  #   output,
+  #   "animation_done",
+  #   suspendWhenHidden = FALSE
+  # )
   
 
 # Package update
