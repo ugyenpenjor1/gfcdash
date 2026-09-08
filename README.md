@@ -43,17 +43,32 @@ run_gfc_dashboard()                 # default - opens in your web browser
 ```
 This opens the dashboard in your default web browser.
 
+<p align="center">
+
+<img src="man/figures/gfcdash_browser.png" width="70%" />
+</p>
+
 ## OR
 ```r
 run_gfc_dashboard(ui = "window")    # RStudio's own pop-up window
 ```
 This opens the dashboard as a separate pop-up window of RStudio. 
 
+<p align="center">
+
+<img src="man/figures/gfcdash_popup_window.png" width="60%" />
+</p>
+
 ## OR
 ```r
 run_gfc_dashboard(ui = "pane")      # RStudio's viewer pane (docked inside the IDE)
 ```
 This opens the dashboard in RStudio's Viewer pane (generally not recommended). 
+
+<p align="center">
+
+<img src="man/figures/gfcdash_RStudio_Viewer.png" width="70%" />
+</p>
 
 Everything the
 dashboard creates during a session - downloaded Hansen tiles, merged and
