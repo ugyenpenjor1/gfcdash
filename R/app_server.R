@@ -1868,14 +1868,23 @@ observeEvent(input$build_animation_btn, {
   
   # ---- Animation display and download ----------------------------------------
   
-  # Make the temporary animation folder available to the browser.
-  # This is needed because the browser cannot directly access an R
-  # filesystem path such as C:/Users/.../AppData/Local/Temp/...
+  # Make sure the animation directory exists before registering it
+  # as a Shiny resource.
   animation_resource_dir <- file.path(session_dir, "animation")
+  
+  dir.create(
+    animation_resource_dir,
+    recursive = TRUE,
+    showWarnings = FALSE
+  )
   
   shiny::addResourcePath(
     prefix = paste0("gfc_animation_", session$token),
-    directoryPath = animation_resource_dir
+    directoryPath = normalizePath(
+      animation_resource_dir,
+      winslash = "/",
+      mustWork = TRUE
+    )
   )
   
   # Tell the UI when the animation has finished rendering.
