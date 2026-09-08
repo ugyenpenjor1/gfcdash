@@ -1881,10 +1881,15 @@ output$animation_saved_msg <- renderUI({
 
 output$animation_display <- renderUI({
   req(rv$animation_done)
+  # if (rv$animation_type == "gif") {
+  #   imageOutput(
+  #     "animation_gif_img",
+  #     height = "500px"
+  #   )
   if (rv$animation_type == "gif") {
-    imageOutput(
-      "animation_gif_img",
-      height = "500px"
+    div(
+      style = "max-width: 500px;",
+      imageOutput("animation_gif_img", height = "auto")
     )
   } else {
     tags$iframe(
@@ -1896,12 +1901,22 @@ output$animation_display <- renderUI({
   }
 })
 
+# output$animation_gif_img <- renderImage({
+#   req(rv$animation_path, file.exists(rv$animation_path))
+#   list(
+#     src = normalizePath(rv$animation_path),
+#     contentType = "image/gif",
+#     width = "100%",
+#     height = "auto"
+#   )
+# }, deleteFile = FALSE)
+
 output$animation_gif_img <- renderImage({
   req(rv$animation_path, file.exists(rv$animation_path))
   list(
     src = normalizePath(rv$animation_path),
     contentType = "image/gif",
-    width = "100%",
+    width = 450,
     height = "auto"
   )
 }, deleteFile = FALSE)
@@ -1926,9 +1941,13 @@ output$download_animation <- downloadHandler(
     } else {
       
       # HTML animation needs its file PLUS its supporting "lib" folder
+      # anim_dir  <- dirname(rv$animation_path)
+      # html_file <- basename(rv$animation_path)
+      # lib_dir   <- file.path(anim_dir, paste0(tools::file_path_sans_ext(html_file), "_files"))
+      
       anim_dir  <- dirname(rv$animation_path)
       html_file <- basename(rv$animation_path)
-      lib_dir   <- file.path(anim_dir, paste0(tools::file_path_sans_ext(html_file), "_files"))
+      lib_dir   <- file.path(anim_dir, paste0(tools::file_path_sans_ext(html_file), "_imgs"))
       
       files_to_zip <- html_file
       if (dir.exists(lib_dir)) {
