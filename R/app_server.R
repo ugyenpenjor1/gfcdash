@@ -1906,6 +1906,43 @@ output$animation_gif_img <- renderImage({
   )
 }, deleteFile = FALSE)
 
+output$download_animation <- downloadHandler(
+  filename = function() {
+    req(rv$animation_path)
+    if (rv$animation_type == "gif") {
+      basename(rv$animation_path)
+    } else {
+      paste0(tools::file_path_sans_ext(basename(rv$animation_path)), ".zip")
+    }
+  },
+  content = function(file) {
+    req(rv$animation_path)
+    
+    if (rv$animation_type == "gif") {
+      
+      # GIF is a single self-contained file - just copy it
+      file.copy(rv$animation_path, file, overwrite = TRUE)
+      
+    } else {
+      
+      # HTML animation needs its file PLUS its supporting "lib" folder
+      anim_dir  <- dirname(rv$animation_path)
+      html_file <- basename(rv$animation_path)
+      lib_dir   <- file.path(anim_dir, paste0(tools::file_path_sans_ext(html_file), "_files"))
+      
+      files_to_zip <- html_file
+      if (dir.exists(lib_dir)) {
+        files_to_zip <- c(files_to_zip, basename(lib_dir))
+      }
+      
+      old_wd <- setwd(anim_dir)
+      on.exit(setwd(old_wd), add = TRUE)
+      
+      zip::zip(zipfile = file, files = files_to_zip)
+    }
+  }
+)
+
 
   # # ---- Animation outputs ------------------------------------------------------
   # 

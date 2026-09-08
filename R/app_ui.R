@@ -503,10 +503,17 @@ Shiny.addCustomMessageHandler('gfcProgress', function(msg) {
             ),
             actionButton("build_animation_btn", "Create animation", icon = icon("film"), class = "btn-success btn-lg"),
             hr(),
+            # conditionalPanel(
+            #   condition = "output.animation_done",
+            #   uiOutput("animation_saved_msg"),
+            #   uiOutput("animation_display")
+            # )
             conditionalPanel(
               condition = "output.animation_done",
               uiOutput("animation_saved_msg"),
-              uiOutput("animation_display")
+              uiOutput("animation_display"),
+              br(),
+              downloadButton("download_animation", "Download animation file", class = "btn-success")
             )
           )
         )
