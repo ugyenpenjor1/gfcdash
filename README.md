@@ -1,6 +1,6 @@
 <table style="border-color: transparent;">
 <tr>
-<td style="width: 80%; border: none;">
+<td style="width: 90%; border: none;">
 <h1>
 gfcdash
 </h1>
@@ -11,7 +11,7 @@ year-by-year forest cover and loss statistics, build classified change
 maps and multi-panel comparisons, and animate the full time series.
 </td>
 <td style="border: 1px solid transparent; text-align: right;">
-<img src="man/figures/gfcdash_logo.png" width="370">
+<img src="man/figures/gfcdash_logo.png" width="420">
 </td>
 </tr>
 </table>
