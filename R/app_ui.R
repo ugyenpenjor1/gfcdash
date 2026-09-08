@@ -513,6 +513,7 @@ Shiny.addCustomMessageHandler('gfcProgress', function(msg) {
               
               column(
                 3,
+                
                 radioButtons(
                   "anim_type",
                   "Format:",
@@ -526,6 +527,7 @@ Shiny.addCustomMessageHandler('gfcProgress', function(msg) {
               
               column(
                 3,
+                
                 numericInput(
                   "anim_dpi",
                   "Resolution (dpi):",
@@ -538,6 +540,7 @@ Shiny.addCustomMessageHandler('gfcProgress', function(msg) {
               
               column(
                 3,
+                
                 checkboxInput(
                   "anim_plot_aoi",
                   "Show AOI outline",
@@ -547,6 +550,7 @@ Shiny.addCustomMessageHandler('gfcProgress', function(msg) {
               
               column(
                 3,
+                
                 checkboxInput(
                   "anim_crop_aoi",
                   "Crop to AOI",
@@ -572,7 +576,9 @@ Shiny.addCustomMessageHandler('gfcProgress', function(msg) {
                 style = "margin-top: 10px;"
               ),
               
-              uiOutput("animation_display"),
+              uiOutput(
+                "animation_display"
+              ),
               
               br(),
               
@@ -588,14 +594,16 @@ Shiny.addCustomMessageHandler('gfcProgress', function(msg) {
             color: #777;
             font-size: 12px;
           ",
-                "The animation is stored temporarily by the application. ",
-                "Use the download button to save it permanently to a folder ",
-                "of your choice."
+                
+                "The animation is stored temporarily while this ",
+                "Shiny session is active. Use the download button ",
+                "to save a permanent copy to a folder of your choice."
               )
             )
           )
         )
       ),
+      
       
 
       ########################################################################

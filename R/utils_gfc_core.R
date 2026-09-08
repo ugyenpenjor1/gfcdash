@@ -650,6 +650,86 @@ plot_gfc <- function(
   p
 }
 
+# # ---- animate_annual -------------------------------------------------------------
+# animate_annual <- function(
+#     aoi,
+#     gfc_stack,
+#     out_dir,
+#     out_basename = "gfc_animation",
+#     site_name = "",
+#     type = "html",
+#     height = 3,
+#     width = 3,
+#     dpi = 150,
+#     dataset = "GFC-2025-v1.13",
+#     plot_aoi = TRUE,
+#     aoi_crop = FALSE,
+#     progress_fun = NULL
+# ) {
+#   if (!inherits(gfc_stack, "SpatRaster")) stop("gfc_stack must be a terra::SpatRaster.")
+#   if (!inherits(aoi, "sf")) stop("aoi must be an sf object.")
+# 
+#   aoi <- sf::st_zm(aoi, drop = TRUE, what = "ZM")
+#   if (any(sf::st_is_empty(aoi))) {
+#     aoi <- aoi[!sf::st_is_empty(aoi), ]
+#     if (nrow(aoi) == 0) stop("aoi contains no valid geometries.")
+#   }
+#   aoi <- sf::st_make_valid(aoi)
+# 
+#   year_match <- stringr::str_extract(dataset, "(?<=GFC-?)[0-9]{4}")
+#   if (is.na(year_match)) stop("Could not extract the GFC year from dataset: ", dataset)
+#   data_year <- as.integer(year_match)
+#   n_layers <- terra::nlyr(gfc_stack)
+#   if (n_layers < 1) stop("gfc_stack contains no layers.")
+# 
+#   if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+#   out_dir <- normalizePath(out_dir, mustWork = TRUE)
+# 
+#   if (tools::file_ext(out_basename) != "") stop("out_basename should not have an extension.")
+# 
+#   type <- tolower(type)
+#   if (!type %in% c("gif", "html")) stop("type must be either 'gif' or 'html'.")
+# 
+#   dates <- seq(2000, by = 1, length.out = n_layers)
+#   maxpixels <- ceiling((width * height * dpi^2) / 1000) * 1000
+# 
+#   animation::ani.options(outdir = out_dir, ani.width = width * dpi,
+#                           ani.height = height * dpi, verbose = FALSE)
+# 
+#   if (type == "gif") {
+#     out_file <- paste0(out_basename, ".gif")
+#     animation::saveGIF({
+#       for (n in seq_len(n_layers)) {
+#         p <- plot_gfc(fchg = gfc_stack[[n]], aoi = aoi, plot_aoi = plot_aoi,
+#                        aoi_crop = aoi_crop, title_string = dates[n],
+#                        size_scale = 1.4, maxpixels = maxpixels)
+#         print(p)
+#         if (!is.null(progress_fun)) {
+#           progress_fun(n / n_layers, detail = paste("Rendering frame", dates[n]))
+#         }
+#       }
+#     }, interval = 0.5, movie.name = out_file)
+#   }
+# 
+#   if (type == "html") {
+#     animation::saveHTML({
+#       for (n in seq_len(n_layers)) {
+#         p <- plot_gfc(fchg = gfc_stack[[n]], aoi = aoi, plot_aoi = plot_aoi,
+#                        aoi_crop = aoi_crop, title_string = dates[n],
+#                        size_scale = 1.4, maxpixels = maxpixels)
+#         print(p)
+#         if (!is.null(progress_fun)) {
+#           progress_fun(n / n_layers, detail = paste("Rendering frame", dates[n]))
+#         }
+#       }
+#     }, img.name = out_basename, imgdir = paste0(out_basename, "_imgs"),
+#        outdir = out_dir, htmlfile = paste0(out_basename, ".html"),
+#        autobrowse = FALSE, title = paste(site_name, "forest change"))
+#   }
+# 
+#   invisible(file.path(out_dir, if (type == "gif") paste0(out_basename, ".gif") else paste0(out_basename, ".html")))
+# }
+
 # ---- animate_annual -------------------------------------------------------------
 animate_annual <- function(
     aoi,
@@ -666,69 +746,246 @@ animate_annual <- function(
     aoi_crop = FALSE,
     progress_fun = NULL
 ) {
-  if (!inherits(gfc_stack, "SpatRaster")) stop("gfc_stack must be a terra::SpatRaster.")
-  if (!inherits(aoi, "sf")) stop("aoi must be an sf object.")
-
+  if (!inherits(gfc_stack, "SpatRaster")) {
+    stop("gfc_stack must be a terra::SpatRaster.")
+  }
+  
+  if (!inherits(aoi, "sf")) {
+    stop("aoi must be an sf object.")
+  }
+  
   aoi <- sf::st_zm(aoi, drop = TRUE, what = "ZM")
+  
   if (any(sf::st_is_empty(aoi))) {
     aoi <- aoi[!sf::st_is_empty(aoi), ]
-    if (nrow(aoi) == 0) stop("aoi contains no valid geometries.")
+    
+    if (nrow(aoi) == 0) {
+      stop("aoi contains no valid geometries.")
+    }
   }
+  
   aoi <- sf::st_make_valid(aoi)
-
-  year_match <- stringr::str_extract(dataset, "(?<=GFC-?)[0-9]{4}")
-  if (is.na(year_match)) stop("Could not extract the GFC year from dataset: ", dataset)
+  
+  year_match <- stringr::str_extract(
+    dataset,
+    "(?<=GFC-?)[0-9]{4}"
+  )
+  
+  if (is.na(year_match)) {
+    stop(
+      "Could not extract the GFC year from dataset: ",
+      dataset
+    )
+  }
+  
   data_year <- as.integer(year_match)
+  
   n_layers <- terra::nlyr(gfc_stack)
-  if (n_layers < 1) stop("gfc_stack contains no layers.")
-
-  if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
-  out_dir <- normalizePath(out_dir, mustWork = TRUE)
-
-  if (tools::file_ext(out_basename) != "") stop("out_basename should not have an extension.")
-
+  
+  if (n_layers < 1) {
+    stop("gfc_stack contains no layers.")
+  }
+  
+  if (!dir.exists(out_dir)) {
+    dir.create(
+      out_dir,
+      recursive = TRUE,
+      showWarnings = FALSE
+    )
+  }
+  
+  out_dir <- normalizePath(
+    out_dir,
+    winslash = "/",
+    mustWork = TRUE
+  )
+  
+  if (tools::file_ext(out_basename) != "") {
+    stop("out_basename should not have an extension.")
+  }
+  
   type <- tolower(type)
-  if (!type %in% c("gif", "html")) stop("type must be either 'gif' or 'html'.")
-
-  dates <- seq(2000, by = 1, length.out = n_layers)
-  maxpixels <- ceiling((width * height * dpi^2) / 1000) * 1000
-
-  animation::ani.options(outdir = out_dir, ani.width = width * dpi,
-                          ani.height = height * dpi, verbose = FALSE)
-
+  
+  if (!type %in% c("gif", "html")) {
+    stop("type must be either 'gif' or 'html'.")
+  }
+  
+  dates <- seq(
+    2000,
+    by = 1,
+    length.out = n_layers
+  )
+  
+  maxpixels <- ceiling(
+    (width * height * dpi^2) / 1000
+  ) * 1000
+  
+  
+  # ---------------------------------------------------------------------------
+  # Save the current working directory so that we can safely restore it.
+  # This is important because the animation package uses relative paths
+  # internally.
+  # ---------------------------------------------------------------------------
+  old_wd <- getwd()
+  
+  on.exit(
+    setwd(old_wd),
+    add = TRUE
+  )
+  
+  
+  # ---------------------------------------------------------------------------
+  # GIF
+  #
+  # saveGIF() creates its intermediate frames in a temporary directory,
+  # but the final movie.name must be an EXPLICIT FULL PATH.
+  #
+  # Previously we supplied only "gfc_animation.gif", which allowed the
+  # animation package to place the final GIF in the current working
+  # directory (Documents on the user's machine).
+  # ---------------------------------------------------------------------------
   if (type == "gif") {
-    out_file <- paste0(out_basename, ".gif")
-    animation::saveGIF({
-      for (n in seq_len(n_layers)) {
-        p <- plot_gfc(fchg = gfc_stack[[n]], aoi = aoi, plot_aoi = plot_aoi,
-                       aoi_crop = aoi_crop, title_string = dates[n],
-                       size_scale = 1.4, maxpixels = maxpixels)
-        print(p)
-        if (!is.null(progress_fun)) {
-          progress_fun(n / n_layers, detail = paste("Rendering frame", dates[n]))
+    
+    out_path <- file.path(
+      out_dir,
+      paste0(out_basename, ".gif")
+    )
+    
+    animation::ani.options(
+      ani.width = width * dpi,
+      ani.height = height * dpi,
+      ani.res = dpi,
+      verbose = FALSE
+    )
+    
+    animation::saveGIF(
+      {
+        for (n in seq_len(n_layers)) {
+          
+          p <- plot_gfc(
+            fchg = gfc_stack[[n]],
+            aoi = aoi,
+            plot_aoi = plot_aoi,
+            aoi_crop = aoi_crop,
+            title_string = dates[n],
+            size_scale = 1.4,
+            maxpixels = maxpixels
+          )
+          
+          print(p)
+          
+          if (!is.null(progress_fun)) {
+            progress_fun(
+              n / n_layers,
+              detail = paste(
+                "Rendering frame",
+                dates[n]
+              )
+            )
+          }
         }
-      }
-    }, interval = 0.5, movie.name = out_file)
+      },
+      interval = 0.5,
+      movie.name = out_path,
+      img.name = file.path(
+        out_dir,
+        paste0(out_basename, "_frame")
+      ),
+      clean = TRUE
+    )
+    
+    if (!file.exists(out_path)) {
+      stop(
+        "GIF animation was not created at: ",
+        out_path
+      )
+    }
+    
+    return(invisible(out_path))
   }
-
+  
+  
+  # ---------------------------------------------------------------------------
+  # HTML
+  #
+  # saveHTML() uses relative paths for its HTML, JS, CSS and image files.
+  # Therefore we temporarily make out_dir the working directory while
+  # saveHTML() runs.
+  # ---------------------------------------------------------------------------
   if (type == "html") {
-    animation::saveHTML({
-      for (n in seq_len(n_layers)) {
-        p <- plot_gfc(fchg = gfc_stack[[n]], aoi = aoi, plot_aoi = plot_aoi,
-                       aoi_crop = aoi_crop, title_string = dates[n],
-                       size_scale = 1.4, maxpixels = maxpixels)
-        print(p)
-        if (!is.null(progress_fun)) {
-          progress_fun(n / n_layers, detail = paste("Rendering frame", dates[n]))
+    
+    setwd(out_dir)
+    
+    html_file <- paste0(
+      out_basename,
+      ".html"
+    )
+    
+    img_dir <- paste0(
+      out_basename,
+      "_imgs"
+    )
+    
+    animation::ani.options(
+      ani.width = width * dpi,
+      ani.height = height * dpi,
+      ani.res = dpi,
+      verbose = FALSE
+    )
+    
+    animation::saveHTML(
+      {
+        for (n in seq_len(n_layers)) {
+          
+          p <- plot_gfc(
+            fchg = gfc_stack[[n]],
+            aoi = aoi,
+            plot_aoi = plot_aoi,
+            aoi_crop = aoi_crop,
+            title_string = dates[n],
+            size_scale = 1.4,
+            maxpixels = maxpixels
+          )
+          
+          print(p)
+          
+          if (!is.null(progress_fun)) {
+            progress_fun(
+              n / n_layers,
+              detail = paste(
+                "Rendering frame",
+                dates[n]
+              )
+            )
+          }
         }
-      }
-    }, img.name = out_basename, imgdir = paste0(out_basename, "_imgs"),
-       outdir = out_dir, htmlfile = paste0(out_basename, ".html"),
-       autobrowse = FALSE, title = paste(site_name, "forest change"))
+      },
+      img.name = out_basename,
+      imgdir = img_dir,
+      htmlfile = html_file,
+      autobrowse = FALSE,
+      title = paste(
+        site_name,
+        "forest change"
+      )
+    )
+    
+    out_path <- file.path(
+      out_dir,
+      html_file
+    )
+    
+    if (!file.exists(out_path)) {
+      stop(
+        "HTML animation was not created at: ",
+        out_path
+      )
+    }
+    
+    return(invisible(out_path))
   }
-
-  invisible(file.path(out_dir, if (type == "gif") paste0(out_basename, ".gif") else paste0(out_basename, ".html")))
 }
+
 
 # ---- compute_forest_mask -------------------------------------------------------
 compute_forest_mask <- function(tree_r, loss_r, gain_r, year, threshold = 30) {
